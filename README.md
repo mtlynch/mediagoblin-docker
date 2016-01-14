@@ -44,12 +44,20 @@ Deploy MediaGoblin with Dokku
 After installing [Dokku](http://dokku.viewdocs.io/dokku/installation/), follow the [Deploying to Dokku instructions](http://dokku.viewdocs.io/dokku/application-deployment/) to create the MediaGoblin v0.8.1 app. The following example is based on Dokku installed at gmg.the.re and creates http://loic.gmg.the.re/.
 
      dokku apps:create loic
+     mkdir /srv/loic
+     dokku docker-options:add loic deploy "-v /srv/loic:/var/lib/mediagoblin"
      git clone -b v0.8.1 https://notabug.org/dachary/mediagoblin-docker.git
      cd mediagoblin-docker
      git remote add dokku dokku@gmg.the.re:loic
      git push dokku v0.8.1:master
      www-browser http://loic.gmg.the.re/
 
+To upgrade, remove the app and create a new one after pulling the desired MediaGoblin version.
+
+     dokku --force apps:destroy loic
+     git fetch origin
+     git checkout -b v0.9.0 v0.9.0
+     git push dokku v0.9.0:master
 
 Upgrade MediaGoblin
 -------------------
