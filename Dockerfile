@@ -47,7 +47,6 @@ RUN apt-get install -y python-gi python3-gi \
     gstreamer1.0-libav \
     python-gst-1.0
 RUN cd /srv/mediagoblin.example.org/mediagoblin && echo '[[mediagoblin.media_types.video]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin bin/pip install
 #
 # Audio plugin
 #
