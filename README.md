@@ -14,8 +14,7 @@ The default user is admin, password admin.
 Demo MediaGoblin locally
 ------------------------
 
-The image is built locally, there is no dependency to the Docker
-registry. All data are lost when the container is stopped.
+The image is built locally, there is no dependency to the Docker registry. All data are lost when the container is stopped.
 
     git clone https://notabug.org/dachary/mediagoblin-docker.git
     sudo docker build -t mediagoblin-demo mediagoblin-docker
@@ -42,12 +41,7 @@ The default user is admin, password admin.
 Deploy MediaGoblin with Dokku
 -----------------------------
 
-After installing
-[Dokku](http://dokku.viewdocs.io/dokku/installation/), follow the
-[Deploying to Dokku
-instructions](http://dokku.viewdocs.io/dokku/application-deployment/)
-to create the MediaGoblin v0.8.1 app. The following example is based on
-Dokku installed at gmg.the.re and creates http://loic.gmg.the.re/.
+After installing [Dokku](http://dokku.viewdocs.io/dokku/installation/), follow the [Deploying to Dokku instructions](http://dokku.viewdocs.io/dokku/application-deployment/) to create the MediaGoblin v0.8.1 app. The following example is based on Dokku installed at gmg.the.re and creates http://loic.gmg.the.re/.
 
      dokku apps:create loic
      git clone -b v0.8.1 https://notabug.org/dachary/mediagoblin-docker.git
@@ -60,9 +54,7 @@ Dokku installed at gmg.the.re and creates http://loic.gmg.the.re/.
 Upgrade MediaGoblin
 -------------------
 
-If the data is preserved in /srv/mediagoblin as described above,
-upgrade by stopping the container and rebulding the image with
-the latest stable version.
+If the data is preserved in /srv/mediagoblin as described above, upgrade by stopping the container and rebulding the image with the latest stable version.
 
     sudo docker stop mediagoblin
     rm -fr mediagoblin-docker
@@ -76,9 +68,7 @@ the latest stable version.
 Maintaining the Dockerfile
 ==========================
 
-The git repository has one branch per stable version. The master
-branch is always the latest stable, not the MediaGoblin development
-branch. This is to make it so PaaS like Dokku get the latest stable by
+The git repository has one branch per stable version. The master branch is always the latest stable, not the MediaGoblin development branch. This is to make it so PaaS like Dokku get the latest stable by
 default instead of the unstable development version.
 
 Publish to the Docker registry
