@@ -23,8 +23,8 @@ RUN useradd -c "GNU MediaGoblin system account" -d /var/lib/mediagoblin -m -r -g
 RUN groupadd mediagoblin && sudo usermod --append -G mediagoblin mediagoblin
 RUN mkdir -p /var/log/mediagoblin && chown -hR mediagoblin:mediagoblin /var/log/mediagoblin
 RUN mkdir -p /srv/mediagoblin.example.org && chown -hR mediagoblin:www-data /srv/mediagoblin.example.org
-RUN cd /srv/mediagoblin.example.org && sudo -u mediagoblin git clone http://git.savannah.gnu.org/r/mediagoblin.git
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin git checkout stable
+RUN cd /srv/mediagoblin.example.org && sudo -u mediagoblin git clone https://github.com/mtlynch/mediagoblin.git
+RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin git checkout docker-friendly
 RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin git submodule sync
 RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin git submodule update --force --init --recursive
 RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin ./bootstrap.sh
