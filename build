@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Exit on first failing command.
+set -e
+# Echo commands to console.
+set -x
+
+IMAGE_NAME="mediagoblin-image"
+CONTAINER_NAME="mediagoblin-container"
+
+docker version
+
+docker build \
+  --tag "$IMAGE_NAME" \
+  .
+
+# Clear any previous container.
+docker rm -f "$CONTAINER_NAME" &> /dev/null || true
+
+docker run \
+  --tty \
+  --detach \
+  --publish 8080:80 \
+  --name "$CONTAINER_NAME" \
+  "$IMAGE_NAME"
+
+curl \
+  --retry 15 \
+  --retry-delay 2 \
+  --fail \
+  "http://localhost:8080/"
