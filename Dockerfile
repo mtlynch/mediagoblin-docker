@@ -22,7 +22,6 @@ RUN apt-get install -y \
       gir1.2-gst-plugins-base-1.0 \
       gir1.2-gstreamer-1.0 \
       git-core \
-      gstreamer1.0-libav
       gstreamer1.0-libav \
       gstreamer1.0-plugins-bad \
       gstreamer1.0-plugins-good \
@@ -30,16 +29,16 @@ RUN apt-get install -y \
       gstreamer1.0-tools \
       libasound2-dev \
       libgstreamer-plugins-base1.0-dev \
-      libsndfile1-dev
+      libsndfile1-dev \
       nginx \
       nodejs-legacy \
       npm \
-      poppler-utils
+      poppler-utils \
       python \
       python3-gi \
       python-dev \
       python-gi \
-      python-gst-1.0
+      python-gst-1.0 \
       python-imaging \
       python-lxml \
       python-numpy \
