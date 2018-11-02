@@ -28,4 +28,4 @@ curl \
   --retry 15 \
   --retry-delay 2 \
   --fail \
-  "http://localhost:8080/"
+  "http://localhost:8080/" > /dev/null
