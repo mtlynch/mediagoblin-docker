@@ -1,0 +1,27 @@
+#!/bin/bash
+
+## Exit immediately on error.
+set -e
+
+# Echo to console.
+set -x
+
+IMAGE_NAME="mediagoblin-image"
+CONTAINER_NAME="mediagoblin-container"
+
+docker version
+
+docker build \
+  --tag "$IMAGE_NAME" \
+  .
+
+# Clear any previous container.
+docker rm -f "$CONTAINER_NAME" &> /dev/null || true
+
+docker run \
+  --detach \
+  --publish 8080:800 \
+  --name mediagoblin-container \
+  mediagoblin-image
+
+curl "http://localhost:8080/"
