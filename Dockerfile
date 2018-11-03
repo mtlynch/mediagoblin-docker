@@ -110,7 +110,7 @@ RUN set -xe && \
 # Clean up.
 USER root
 RUN apt-get remove --yes \
-    automake
+    automake \
     git-core && \
     rm -rf /var/lib/apt/lists/* && \
     rm -Rf /usr/share/doc && \
