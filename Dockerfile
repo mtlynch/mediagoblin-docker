@@ -98,14 +98,16 @@ USER mediagoblin
 CMD sudo nginx && \
     sudo chown \
      --no-dereference \
-     --recursive \
+     --recursive && \
      mediagoblin:www-data /var/lib/mediagoblin && \
-     mediagoblin bin/gmg dbupdate && \
-     mediagoblin bin/gmg adduser \
-       --username admin \
-       --password admin \
-       --email some@where.com && \
-     mediagoblin bin/gmg makeadmin admin && \
+     { \
+       mediagoblin bin/gmg dbupdate; \
+       mediagoblin bin/gmg adduser \
+         --username admin \
+         --password admin \
+         --email some@where.com; \
+       bin/gmg makeadmin admin;
+     } && \
      ./lazyserver.sh \
        --server-name=fcgi \
        fcgi_host=127.0.0.1 \
