@@ -48,23 +48,28 @@ RUN apt-get install -y \
 RUN useradd -c "GNU MediaGoblin system account" -d /var/lib/mediagoblin -m -r -g www-data mediagoblin
 RUN groupadd mediagoblin && sudo usermod --append -G mediagoblin mediagoblin
 RUN mkdir -p /var/log/mediagoblin && chown -hR mediagoblin:mediagoblin /var/log/mediagoblin
-RUN mkdir -p /srv/mediagoblin.example.org && chown -hR mediagoblin:www-data /srv/mediagoblin.example.org
-RUN cd /srv/mediagoblin.example.org && sudo -u mediagoblin git clone https://github.com/mtlynch/mediagoblin.git
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin git checkout docker-friendly
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin git submodule sync
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin git submodule update --force --init --recursive
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin ./bootstrap.sh
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin ./configure
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin make
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin bin/easy_install flup==1.0.3.dev-20110405
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin ln -s /var/lib/mediagoblin user_dev
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin bash -c 'cp -av mediagoblin.ini mediagoblin_local.ini && cp -av paste.ini paste_local.ini'
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin perl -pi -e 's|.*sql_engine = .*|sql_engine = sqlite:////var/lib/mediagoblin/mediagoblin.db|' mediagoblin_local.ini
+RUN mkdir -p /srv/mediagoblin.example.org/mediagoblin && chown -hR mediagoblin:www-data /srv/mediagoblin.example.org/mediagoblin
 
-RUN cd /srv/mediagoblin.example.org/mediagoblin && echo '[[mediagoblin.media_types.video]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
-RUN cd /srv/mediagoblin.example.org/mediagoblin && echo '[[mediagoblin.media_types.audio]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
-RUN cd /srv/mediagoblin.example.org/mediagoblin && sudo -u mediagoblin bin/pip install scikits.audiolab
-RUN cd /srv/mediagoblin.example.org/mediagoblin && echo '[[mediagoblin.media_types.pdf]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
+USER mediagoblin
+WORKDIR /srv/mediagoblin.example.org/mediagoblin
+
+RUN git clone https://github.com/mtlynch/mediagoblin.git .
+RUN git checkout docker-friendly
+RUN git submodule sync
+RUN git submodule update --force --init --recursive
+RUN ./bootstrap.sh
+RUN ./configure
+RUN make
+RUN bin/easy_install flup==1.0.3.dev-20110405
+RUN ln -s /var/lib/mediagoblin user_dev
+RUN bash -c 'cp -av mediagoblin.ini mediagoblin_local.ini && cp -av paste.ini paste_local.ini'
+RUN perl -pi -e 's|.*sql_engine = .*|sql_engine = sqlite:////var/lib/mediagoblin/mediagoblin.db|' mediagoblin_local.ini
+
+USER root
+RUN echo '[[mediagoblin.media_types.video]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
+RUN echo '[[mediagoblin.media_types.audio]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
+RUN sudo -u mediagoblin bin/pip install scikits.audiolab
+RUN echo '[[mediagoblin.media_types.pdf]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
 
 ADD docker-nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
