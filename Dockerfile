@@ -93,6 +93,18 @@ RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 EXPOSE 80
 
-ADD docker-entrypoint.sh /entrypoint.sh
-
-ENTRYPOINT ["/entrypoint.sh"]
+CMD nginx && \
+    chown \
+     --no-dereference \
+     --recursive \
+     mediagoblin:www-data /var/lib/mediagoblin && \
+     sudo -u mediagoblin bin/gmg dbupdate && \
+     sudo -u mediagoblin bin/gmg adduser \
+       --username admin \
+       --password admin \
+       --email some@where.com && \
+     sudo -u mediagoblin bin/gmg makeadmin admin && \
+     sudo -u mediagoblin ./lazyserver.sh \
+       --server-name=fcgi \
+       fcgi_host=127.0.0.1 \
+       fcgi_port=26543
