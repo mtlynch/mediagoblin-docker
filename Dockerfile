@@ -45,10 +45,25 @@ RUN apt-get install -y \
       python-scipy \
       python-virtualenv \
       sudo
-RUN useradd -c "GNU MediaGoblin system account" -d /var/lib/mediagoblin -m -r -g www-data mediagoblin
-RUN groupadd mediagoblin && sudo usermod --append -G mediagoblin mediagoblin
-RUN mkdir -p /var/log/mediagoblin && chown -hR mediagoblin:mediagoblin /var/log/mediagoblin
-RUN mkdir -p /srv/mediagoblin.example.org/mediagoblin && chown -hR mediagoblin:www-data /srv/mediagoblin.example.org/mediagoblin
+RUN useradd \
+      --comment "GNU MediaGoblin system account" \
+      --home-dir /var/lib/mediagoblin \
+      --create-home \
+      --system \
+      --gid www-data \
+      mediagoblin
+RUN groupadd mediagoblin && \
+    usermod --append --groups mediagoblin mediagoblin
+RUN mkdir --parents /var/log/mediagoblin && \
+    chown \
+      --no-dereference \
+      --recursive \
+      mediagoblin:mediagoblin /var/log/mediagoblin
+RUN mkdir --parents /srv/mediagoblin.example.org/mediagoblin && \
+    chown \
+      --no-dereference \
+      --recursive \
+      mediagoblin:www-data /srv/mediagoblin.example.org/mediagoblin
 
 USER mediagoblin
 WORKDIR /srv/mediagoblin.example.org/mediagoblin
@@ -61,8 +76,9 @@ RUN ./bootstrap.sh
 RUN ./configure
 RUN make
 RUN bin/easy_install flup==1.0.3.dev-20110405
-RUN ln -s /var/lib/mediagoblin user_dev
-RUN bash -c 'cp -av mediagoblin.ini mediagoblin_local.ini && cp -av paste.ini paste_local.ini'
+RUN ln --symbolic /var/lib/mediagoblin user_dev
+RUN cp --archive --verbose mediagoblin.ini mediagoblin_local.ini
+RUN cp --archive --verbose paste.ini paste_local.ini
 RUN perl -pi -e 's|.*sql_engine = .*|sql_engine = sqlite:////var/lib/mediagoblin/mediagoblin.db|' mediagoblin_local.ini
 
 USER root
