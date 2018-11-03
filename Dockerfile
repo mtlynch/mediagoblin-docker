@@ -79,13 +79,13 @@ RUN git clone https://github.com/mtlynch/mediagoblin.git . && \
     ln --symbolic /var/lib/mediagoblin user_dev && \
     cp --archive --verbose mediagoblin.ini mediagoblin_local.ini && \
     cp --archive --verbose paste.ini paste_local.ini && \
-    perl -pi -e 's|.*sql_engine = .*|sql_engine = sqlite:////var/lib/mediagoblin/mediagoblin.db|' mediagoblin_local.ini
+    perl -pi -e 's|.*sql_engine = .*|sql_engine = sqlite:////var/lib/mediagoblin/mediagoblin.db|' mediagoblin_local.ini && \
+    echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
+    echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
+    echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini
 
 USER root
-RUN echo '[[mediagoblin.media_types.video]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
-RUN echo '[[mediagoblin.media_types.audio]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
 RUN sudo -u mediagoblin bin/pip install scikits.audiolab
-RUN echo '[[mediagoblin.media_types.pdf]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
 
 ADD docker-nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
