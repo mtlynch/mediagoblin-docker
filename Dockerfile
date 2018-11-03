@@ -48,6 +48,17 @@ RUN apt-get install -y \
       python-virtualenv \
       sudo
 
+ARG GCSFUSE_REPO="gcsfuse-jessie"
+RUN apt-get install --yes --no-install-recommends \
+    ca-certificates \
+    curl && \
+    echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" \
+      | tee /etc/apt/sources.list.d/gcsfuse.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+      | apt-key add -
+RUN apt-get update
+RUN apt-get install --yes gcsfuse
+
 # Information for MediaGoblin system account.
 ARG MEDIAGOBLIN_USER="mediagoblin"
 ARG MEDIAGOBLIN_GROUP="mediagoblin"
