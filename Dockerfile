@@ -65,6 +65,11 @@ RUN useradd \
       --recursive \
       mediagoblin:www-data /srv/mediagoblin.example.org/mediagoblin
 
+ADD docker-nginx.conf /etc/nginx/sites-enabled/nginx.conf
+RUN rm /etc/nginx/sites-enabled/default
+RUN echo 'mediagoblin ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx, /bin/chown' \
+      >> /etc/sudoers
+
 USER mediagoblin
 WORKDIR /srv/mediagoblin.example.org/mediagoblin
 
@@ -75,6 +80,7 @@ RUN git clone https://github.com/mtlynch/mediagoblin.git . && \
     ./bootstrap.sh && \
     ./configure && \
     make && \
+    bin/pip install scikits.audiolab && \
     bin/easy_install flup==1.0.3.dev-20110405 && \
     ln --symbolic /var/lib/mediagoblin user_dev && \
     cp --archive --verbose mediagoblin.ini mediagoblin_local.ini && \
@@ -84,17 +90,8 @@ RUN git clone https://github.com/mtlynch/mediagoblin.git . && \
     echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini
 
-USER root
-RUN sudo -u mediagoblin bin/pip install scikits.audiolab
-
-ADD docker-nginx.conf /etc/nginx/sites-enabled/nginx.conf
-RUN rm /etc/nginx/sites-enabled/default
-RUN echo 'mediagoblin ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx, /bin/chown' \
-      >> /etc/sudoers
-
 EXPOSE 80
 
-USER mediagoblin
 CMD sudo nginx && \
     sudo chown \
      --no-dereference \
