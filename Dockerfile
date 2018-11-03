@@ -107,6 +107,19 @@ RUN set -xe && \
     echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini
 
+# Clean up.
+USER root
+RUN apt-get remove --yes \
+    automake
+    git-core && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -Rf /usr/share/doc && \
+    rm -Rf /usr/share/man && \
+    apt-get autoremove --yes && \
+    apt-get clean
+
+USER "$MEDIAGOBLIN_USER"
+
 EXPOSE 80
 
 # Copy build args to environment variables so that they're accessible in CMD.
