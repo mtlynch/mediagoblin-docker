@@ -24,6 +24,9 @@ docker run \
   --name "$CONTAINER_NAME" \
   "$IMAGE_NAME"
 
+# Give the container a little time to start up.
+sleep 3
+
 curl \
   --retry 15 \
   --retry-delay 2 \
