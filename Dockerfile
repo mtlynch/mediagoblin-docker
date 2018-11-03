@@ -51,15 +51,15 @@ RUN useradd \
       --create-home \
       --system \
       --gid www-data \
-      mediagoblin
-RUN groupadd mediagoblin && \
-    usermod --append --groups mediagoblin mediagoblin
-RUN mkdir --parents /var/log/mediagoblin && \
+      mediagoblin && \
+    groupadd mediagoblin && \
+    usermod --append --groups mediagoblin mediagoblin && \
+    mkdir --parents /var/log/mediagoblin && \
     chown \
       --no-dereference \
       --recursive \
-      mediagoblin:mediagoblin /var/log/mediagoblin
-RUN mkdir --parents /srv/mediagoblin.example.org/mediagoblin && \
+      mediagoblin:mediagoblin /var/log/mediagoblin && \
+    mkdir --parents /srv/mediagoblin.example.org/mediagoblin && \
     chown \
       --no-dereference \
       --recursive \
@@ -68,18 +68,18 @@ RUN mkdir --parents /srv/mediagoblin.example.org/mediagoblin && \
 USER mediagoblin
 WORKDIR /srv/mediagoblin.example.org/mediagoblin
 
-RUN git clone https://github.com/mtlynch/mediagoblin.git .
-RUN git checkout docker-friendly
-RUN git submodule sync
-RUN git submodule update --force --init --recursive
-RUN ./bootstrap.sh
-RUN ./configure
-RUN make
-RUN bin/easy_install flup==1.0.3.dev-20110405
-RUN ln --symbolic /var/lib/mediagoblin user_dev
-RUN cp --archive --verbose mediagoblin.ini mediagoblin_local.ini
-RUN cp --archive --verbose paste.ini paste_local.ini
-RUN perl -pi -e 's|.*sql_engine = .*|sql_engine = sqlite:////var/lib/mediagoblin/mediagoblin.db|' mediagoblin_local.ini
+RUN git clone https://github.com/mtlynch/mediagoblin.git . && \
+    git checkout docker-friendly && \
+    git submodule sync && \
+    git submodule update --force --init --recursive && \
+    ./bootstrap.sh && \
+    ./configure && \
+    make && \
+    bin/easy_install flup==1.0.3.dev-20110405 && \
+    ln --symbolic /var/lib/mediagoblin user_dev && \
+    cp --archive --verbose mediagoblin.ini mediagoblin_local.ini && \
+    cp --archive --verbose paste.ini paste_local.ini && \
+    perl -pi -e 's|.*sql_engine = .*|sql_engine = sqlite:////var/lib/mediagoblin/mediagoblin.db|' mediagoblin_local.ini
 
 USER root
 RUN echo '[[mediagoblin.media_types.video]]' | sudo -u mediagoblin tee -a mediagoblin_local.ini
@@ -90,6 +90,9 @@ RUN echo '[[mediagoblin.media_types.pdf]]' | sudo -u mediagoblin tee -a mediagob
 ADD docker-nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
 RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
 EXPOSE 80
+
 ADD docker-entrypoint.sh /entrypoint.sh
+
 ENTRYPOINT ["/entrypoint.sh"]
