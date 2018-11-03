@@ -15,7 +15,22 @@
 #    You should have received a copy of the GNU Affero General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+
 FROM debian:jessie
+
+# Information for MediaGoblin system account.
+ARG MEDIAGOBLIN_USER="mediagoblin"
+ARG MEDIAGOBLIN_GROUP="mediagoblin"
+
+ARG APP_ROOT="/srv/mediagoblin.example.org/mediagoblin"
+ARG LOG_ROOT="/var/log/mediagoblin"
+ARG MEDIAGOBLIN_HOME_DIR="/var/lib/mediagoblin"
+
+# Admin user in the MediaGoblin app.
+ARG MEDIAGOBLIN_ADMIN_USER="admin"
+ARG MEDIAGOBLIN_ADMIN_PASS="admin"
+ARG MEDIAGOBLIN_ADMIN_EMAIL="some@where.com"
+
 RUN apt-get update
 RUN apt-get install -y \
       automake \
@@ -45,35 +60,38 @@ RUN apt-get install -y \
       python-scipy \
       python-virtualenv \
       sudo
-RUN useradd \
+RUN set -xe && \
+    useradd \
       --comment "GNU MediaGoblin system account" \
-      --home-dir /var/lib/mediagoblin \
+      --home-dir "$MEDIAGOBLIN_HOME_DIR" \
       --create-home \
       --system \
       --gid www-data \
-      mediagoblin && \
-    groupadd mediagoblin && \
-    usermod --append --groups mediagoblin mediagoblin && \
-    mkdir --parents /var/log/mediagoblin && \
+      "$MEDIAGOBLIN_USER" && \
+    groupadd "$MEDIAGOBLIN_GROUP" && \
+    usermod --append --groups "$MEDIAGOBLIN_GROUP" "$MEDIAGOBLIN_USER" && \
+    mkdir --parents "$LOG_ROOT" && \
     chown \
       --no-dereference \
       --recursive \
-      mediagoblin:mediagoblin /var/log/mediagoblin && \
-    mkdir --parents /srv/mediagoblin.example.org/mediagoblin && \
+      "${MEDIAGOBLIN_USER}:${MEDIAGOBLIN_GROUP}" "$LOG_ROOT" && \
+    mkdir --parents "$APP_ROOT" && \
     chown \
       --no-dereference \
       --recursive \
-      mediagoblin:www-data /srv/mediagoblin.example.org/mediagoblin
+      "${MEDIAGOBLIN_USER}:www-data" "$APP_ROOT"
 
 ADD docker-nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
-RUN echo 'mediagoblin ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx, /bin/chown' \
+RUN set -xe && \
+    echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx, /bin/chown" \
       >> /etc/sudoers
 
-USER mediagoblin
-WORKDIR /srv/mediagoblin.example.org/mediagoblin
+USER "$MEDIAGOBLIN_USER"
+WORKDIR "$APP_ROOT"
 
-RUN git clone https://github.com/mtlynch/mediagoblin.git . && \
+RUN set -xe && \
+    git clone https://github.com/mtlynch/mediagoblin.git . && \
     git checkout docker-friendly && \
     git submodule sync && \
     git submodule update --force --init --recursive && \
@@ -82,10 +100,13 @@ RUN git clone https://github.com/mtlynch/mediagoblin.git . && \
     make && \
     bin/pip install scikits.audiolab && \
     bin/easy_install flup==1.0.3.dev-20110405 && \
-    ln --symbolic /var/lib/mediagoblin user_dev && \
+    ln --symbolic "$MEDIAGOBLIN_HOME_DIR" user_dev && \
     cp --archive --verbose mediagoblin.ini mediagoblin_local.ini && \
     cp --archive --verbose paste.ini paste_local.ini && \
-    perl -pi -e 's|.*sql_engine = .*|sql_engine = sqlite:////var/lib/mediagoblin/mediagoblin.db|' mediagoblin_local.ini && \
+    sed \
+      --in-place \
+      "s@.*sql_engine = .*@sql_engine = sqlite:///${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db@" \
+      mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini
@@ -96,14 +117,14 @@ CMD sudo nginx && \
     sudo chown \
      --no-dereference \
      --recursive \
-     mediagoblin:www-data /var/lib/mediagoblin && \
+     "${MEDIAGOBLIN_USER}:www-data" "$MEDIAGOBLIN_HOME_DIR" && \
      { \
        bin/gmg dbupdate; \
        bin/gmg adduser \
-         --username admin \
-         --password admin \
-         --email some@where.com; \
-       bin/gmg makeadmin admin; \
+         --username "$MEDIAGOBLIN_ADMIN_USER" \
+         --password "$MEDIAGOBLIN_ADMIN_PASS" \
+         --email "$MEDIAGOBLIN_ADMIN_EMAIL"; \
+       bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER"; \
      } && \
      ./lazyserver.sh \
        --server-name=fcgi \
