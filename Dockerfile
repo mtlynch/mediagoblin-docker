@@ -48,7 +48,7 @@ RUN apt-get install -y \
 RUN useradd -c "GNU MediaGoblin system account" -d /var/lib/mediagoblin -m -r -g www-data mediagoblin
 RUN groupadd mediagoblin && sudo usermod --append -G mediagoblin mediagoblin
 RUN mkdir -p /var/log/mediagoblin && chown -hR mediagoblin:mediagoblin /var/log/mediagoblin
-RUN mkdir -p /srv/mediagoblin.example.org && chown -hR mediagoblin:www-data /srv/mediagoblin.example.org
+RUN mkdir -p /srv/mediagoblin.example.org/mediagoblin && chown -hR mediagoblin:www-data /srv/mediagoblin.example.org/mediagoblin
 
 USER mediagoblin
 WORKDIR /srv/mediagoblin.example.org/mediagoblin
