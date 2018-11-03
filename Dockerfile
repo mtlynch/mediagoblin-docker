@@ -89,22 +89,26 @@ RUN sudo -u mediagoblin bin/pip install scikits.audiolab
 
 ADD docker-nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
-RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+RUN echo 'mediagoblin ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx, /bin/chown' \
+      >> /etc/sudoers
 
 EXPOSE 80
 
-CMD nginx && \
-    chown \
+USER mediagoblin
+CMD sudo nginx && \
+    sudo chown \
      --no-dereference \
      --recursive \
      mediagoblin:www-data /var/lib/mediagoblin && \
-     sudo -u mediagoblin bin/gmg dbupdate && \
-     sudo -u mediagoblin bin/gmg adduser \
-       --username admin \
-       --password admin \
-       --email some@where.com && \
-     sudo -u mediagoblin bin/gmg makeadmin admin && \
-     sudo -u mediagoblin ./lazyserver.sh \
+     { \
+       bin/gmg dbupdate; \
+       bin/gmg adduser \
+         --username admin \
+         --password admin \
+         --email some@where.com; \
+       bin/gmg makeadmin admin; \
+     } && \
+     ./lazyserver.sh \
        --server-name=fcgi \
        fcgi_host=127.0.0.1 \
        fcgi_port=26543
