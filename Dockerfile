@@ -129,9 +129,9 @@ RUN set -xe && \
 USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
 
+ARG MEDIAGOBLIN_DB_PATH="${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db"
 ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
 ARG MEDIAGOBLIN_BRANCH="docker-friendly"
-ENV MEDIAGOBLIN_DB_PATH "${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db"
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
     git checkout "$MEDIAGOBLIN_BRANCH" && \
