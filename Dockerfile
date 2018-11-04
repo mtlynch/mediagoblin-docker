@@ -135,18 +135,18 @@ ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
 
 CMD sudo nginx && \
     sudo chown \
-     --no-dereference \
-     --recursive \
-     "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$MEDIAGOBLIN_HOME_DIR" && \
-     { \
-       bin/gmg dbupdate; \
-       bin/gmg adduser \
-         --username "$MEDIAGOBLIN_ADMIN_USER" \
-         --password "$MEDIAGOBLIN_ADMIN_PASS" \
-         --email "$MEDIAGOBLIN_ADMIN_EMAIL"; \
-       bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER"; \
-     } && \
-     ./lazyserver.sh \
-       --server-name=fcgi \
-       fcgi_host=127.0.0.1 \
-       fcgi_port=26543
+      --no-dereference \
+      --recursive \
+      "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$MEDIAGOBLIN_HOME_DIR" && \
+    { \
+      bin/gmg dbupdate; \
+      bin/gmg adduser \
+        --username "$MEDIAGOBLIN_ADMIN_USER" \
+        --password "$MEDIAGOBLIN_ADMIN_PASS" \
+        --email "$MEDIAGOBLIN_ADMIN_EMAIL"; \
+      bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER"; \
+    } && \
+    ./lazyserver.sh \
+      --server-name=fcgi \
+      fcgi_host=127.0.0.1 \
+      fcgi_port=26543
