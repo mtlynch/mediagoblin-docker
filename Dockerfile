@@ -91,7 +91,7 @@ ARG MEDIAGOBLIN_REPO="http://git.savannah.gnu.org/r/mediagoblin.git"
 ARG MEDIAGOBLIN_BRANCH="stable"
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
-    git checkout "$MEDIGOBLIN_BRANCH" && \
+    git checkout "$MEDIAGOBLIN_BRANCH" && \
     git submodule sync && \
     git submodule update --force --init --recursive && \
     ./bootstrap.sh && \
@@ -130,8 +130,6 @@ USER "$MEDIAGOBLIN_USER"
 EXPOSE 80
 
 # Copy build args to environment variables so that they're accessible in CMD.
-ENV MEDIGOBLIN_USER "$MEDIAGOBLIN_USER"
-ENV MEDIAGOBLIN_HOME_DIR "$MEDIAGOBLIN_HOME_DIR"
 ENV NGINX_GROUP "$NGINX_GROUP"
 
 # Admin user in the MediaGoblin app.
