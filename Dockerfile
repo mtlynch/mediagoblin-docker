@@ -51,6 +51,7 @@ RUN apt-get install -y \
 # Information for MediaGoblin system account.
 ARG MEDIAGOBLIN_USER="mediagoblin"
 ARG MEDIAGOBLIN_GROUP="mediagoblin"
+ARG NGINX_GROUP="www-data"
 
 ARG APP_ROOT="/srv/mediagoblin.example.org/mediagoblin"
 ARG LOG_ROOT="/var/log/mediagoblin"
@@ -62,7 +63,7 @@ RUN set -xe && \
       --home-dir "$MEDIAGOBLIN_HOME_DIR" \
       --create-home \
       --system \
-      --gid www-data \
+      --gid "$NGINX_GROUP" \
       "$MEDIAGOBLIN_USER" && \
     groupadd "$MEDIAGOBLIN_GROUP" && \
     usermod --append --groups "$MEDIAGOBLIN_GROUP" "$MEDIAGOBLIN_USER" && \
@@ -75,7 +76,7 @@ RUN set -xe && \
     chown \
       --no-dereference \
       --recursive \
-      "${MEDIAGOBLIN_USER}:www-data" "$APP_ROOT"
+      "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT"
 
 ADD nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
@@ -123,8 +124,9 @@ USER "$MEDIAGOBLIN_USER"
 EXPOSE 80
 
 # Copy build args to environment variables so that they're accessible in CMD.
-ENV MEDIGOBLIN_USER $MEDIAGOBLIN_USER
-ENV MEDIAGOBLIN_HOME_DIR $MEDIAGOBLIN_HOME_DIR
+ENV MEDIGOBLIN_USER "$MEDIAGOBLIN_USER"
+ENV MEDIAGOBLIN_HOME_DIR "$MEDIAGOBLIN_HOME_DIR"
+ENV NGINX_GROUP "$NGINX_GROUP"
 
 # Admin user in the MediaGoblin app.
 ENV MEDIAGOBLIN_ADMIN_USER admin
@@ -135,7 +137,7 @@ CMD sudo nginx && \
     sudo chown \
      --no-dereference \
      --recursive \
-     "${MEDIAGOBLIN_USER}:www-data" "$MEDIAGOBLIN_HOME_DIR" && \
+     "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$MEDIAGOBLIN_HOME_DIR" && \
      { \
        bin/gmg dbupdate; \
        bin/gmg adduser \
