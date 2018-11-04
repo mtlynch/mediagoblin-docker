@@ -91,7 +91,7 @@ ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
 ARG MEDIAGOBLIN_BRANCH="docker-friendly"
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
-    git checkout "$MEDIGOBLIN_BRANCH" && \
+    git checkout "$MEDIAGOBLIN_BRANCH" && \
     git submodule sync && \
     git submodule update --force --init --recursive && \
     ./bootstrap.sh && \
