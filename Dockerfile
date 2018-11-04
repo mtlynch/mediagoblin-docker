@@ -77,7 +77,7 @@ RUN set -xe && \
       --recursive \
       "${MEDIAGOBLIN_USER}:www-data" "$APP_ROOT"
 
-ADD docker-nginx.conf /etc/nginx/sites-enabled/nginx.conf
+ADD nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
 RUN set -xe && \
     echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx, /bin/chown" \
