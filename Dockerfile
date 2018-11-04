@@ -81,7 +81,7 @@ RUN set -xe && \
 ADD nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
 RUN set -xe && \
-    echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx, /bin/chown" \
+    echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx" \
       >> /etc/sudoers
 
 USER "$MEDIAGOBLIN_USER"
@@ -106,7 +106,11 @@ RUN set -xe && \
       mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
-    echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini
+    echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini && \
+    chgrp \
+      --no-dereference \
+      --recursive \
+      "$NGINX_GROUP" "$MEDIAGOBLIN_HOME_DIR"
 
 # Clean up.
 USER root
@@ -134,10 +138,6 @@ ENV MEDIAGOBLIN_ADMIN_PASS admin
 ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
 
 CMD sudo nginx && \
-    sudo chown \
-      --no-dereference \
-      --recursive \
-      "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$MEDIAGOBLIN_HOME_DIR" && \
     bin/gmg dbupdate && \
     bin/gmg adduser \
       --username "$MEDIAGOBLIN_ADMIN_USER" \
