@@ -87,9 +87,11 @@ RUN set -xe && \
 USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
 
+ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
+ARG MEDIAGOBLIN_BRANCH="docker-friendly"
 RUN set -xe && \
-    git clone https://github.com/mtlynch/mediagoblin.git . && \
-    git checkout docker-friendly && \
+    git clone "$MEDIAGOBLIN_REPO" . && \
+    git checkout "$MEDIAGOBLIN_BRANCH" && \
     git submodule sync && \
     git submodule update --force --init --recursive && \
     ./bootstrap.sh && \
