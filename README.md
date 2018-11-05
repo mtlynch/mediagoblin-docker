@@ -33,3 +33,12 @@ MediaGoblin will be available at http://localhost:8080
 The default user is `admin`, password `admin`.
 
 MediaGoblin will save data to `./persist/srv/mediagoblin`
+
+## Build container from source
+
+To rebuild this container, copy this repository locally and run:
+
+
+```bash
+docker build --tag mediagoblin .
+```
