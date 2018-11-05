@@ -18,6 +18,10 @@
 
 FROM debian:jessie
 
+# Set locale.
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
 RUN apt-get update
 RUN apt-get install -y \
       automake \
