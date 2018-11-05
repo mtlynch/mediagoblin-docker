@@ -139,11 +139,14 @@ ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
 
 CMD sudo nginx && \
     bin/gmg dbupdate && \
-    bin/gmg adduser \
-      --username "$MEDIAGOBLIN_ADMIN_USER" \
-      --password "$MEDIAGOBLIN_ADMIN_PASS" \
-      --email "$MEDIAGOBLIN_ADMIN_EMAIL" && \
-    bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER" && \
+    `# Ignore failure to add admin because they may already exist.` \
+    { \
+      bin/gmg adduser \
+        --username "$MEDIAGOBLIN_ADMIN_USER" \
+        --password "$MEDIAGOBLIN_ADMIN_PASS" \
+        --email "$MEDIAGOBLIN_ADMIN_EMAIL" && \
+      bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER" \
+    } || true && \
     ./lazyserver.sh \
       --server-name=fcgi \
       fcgi_host=127.0.0.1 \
