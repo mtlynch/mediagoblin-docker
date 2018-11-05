@@ -177,27 +177,5 @@ ENV MEDIAGOBLIN_ADMIN_USER admin
 ENV MEDIAGOBLIN_ADMIN_PASS admin
 ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
 
-CMD sudo nginx && \
-    gcsfuse \
-      -o nonempty \
-      -o allow_other \
-      "$GCS_BUCKET" "$GCS_MOUNT_ROOT" && \
-    if [ ! -d "$MEDIAGOBLIN_PUBLIC_DIR" ]; then \
-      mkdir --parents "$MEDIAGOBLIN_MEDIA_DIR" && \
-      ln --symbolic "$GCS_MOUNT_ROOT" "$MEDIAGOBLIN_PUBLIC_DIR"; \
-    fi && \
-    if [ ! -f "$MEDIAGOBLIN_DB_PATH" ] && [ -f "$GCS_DB_PATH" ]; then \
-      cp "$GCS_DB_PATH" "$MEDIAGOBLIN_DB_PATH"; \
-    fi && \
-    bin/gmg dbupdate && \
-    bin/gmg adduser \
-      --username "$MEDIAGOBLIN_ADMIN_USER" \
-      --password "$MEDIAGOBLIN_ADMIN_PASS" \
-      --email "$MEDIAGOBLIN_ADMIN_EMAIL" && \
-    bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER" && \
-    echo "$MEDIAGOBLIN_DB_PATH" | \
-      entr -n rsync "$MEDIAGOBLIN_DB_PATH" "$GCS_DB_PATH" & \
-    ./lazyserver.sh \
-      --server-name=fcgi \
-      fcgi_host=127.0.0.1 \
-      fcgi_port=26543
+ADD entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
