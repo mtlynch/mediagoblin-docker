@@ -113,6 +113,11 @@ RUN set -xe && \
     echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini && \
+    mkdir --parents plugins && \
+    git clone https://github.com/ayleph/mediagoblin-basicsearch.git && \
+    mv mediagoblin-basicsearch/basicsearch mediagoblin/plugins/ && \
+    rm -rf mediagoblin-basicsearch && \
+    echo '[[mediagoblin.plugins.basicsearch]]' >> mediagoblin_local.ini && \
     chgrp \
       --no-dereference \
       --recursive \
