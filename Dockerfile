@@ -92,7 +92,7 @@ USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
 
 ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
-ARG MEDIAGOBLIN_BRANCH="docker-friendly"
+ARG MEDIAGOBLIN_BRANCH="mtlynch-custom"
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
     git checkout "$MEDIAGOBLIN_BRANCH" && \
@@ -111,8 +111,12 @@ RUN set -xe && \
       "s@.*sql_engine = .*@sql_engine = sqlite:///${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db@" \
       mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
-    echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
-    echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini && \
+    echo '[[[skip_transcode]]]' >> mediagoblin_local.ini && \
+    echo 'mime_types = video/webm, video/ogg, video/mp4, audio/ogg, application/ogg, application/x-annodex' >> mediagoblin_local.ini && \
+    echo 'container_formats = Matroska, Ogg, ISO MP4/M4A' >> mediagoblin_local.ini && \
+    echo 'video_codecs = d, VP8 video, VP9 video, Theora, H.264, H.264 / AVC, MPEG-4 video' >> mediagoblin_local.ini && \
+    echo 'audio_codecs = Opus, Vorbis, MPEG-4 AAC, MPEG-4 AAC audio' >> mediagoblin_local.ini && \
+    echo 'dimensions_match = false' >> mediagoblin_local.ini && \
     chgrp \
       --no-dereference \
       --recursive \
