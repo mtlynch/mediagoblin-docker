@@ -91,8 +91,8 @@ RUN set -xe && \
 USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
 
-ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
-ARG MEDIAGOBLIN_BRANCH="docker-friendly"
+ARG MEDIAGOBLIN_REPO="http://git.savannah.gnu.org/r/mediagoblin.git"
+ARG MEDIAGOBLIN_BRANCH="stable"
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
     git checkout "$MEDIAGOBLIN_BRANCH" && \
