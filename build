@@ -21,6 +21,8 @@ docker run \
   --tty \
   --detach \
   --publish 8080:80 \
+  --cap-add=NET_ADMIN \
+  --cap-add=NET_RAW \
   --name "$CONTAINER_NAME" \
   "$IMAGE_NAME"
 

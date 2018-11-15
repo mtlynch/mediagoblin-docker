@@ -23,7 +23,8 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
 RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get install --yes \
+      apache2-utils \
       automake \
       gir1.2-gst-plugins-base-1.0 \
       gir1.2-gstreamer-1.0 \
@@ -85,8 +86,10 @@ RUN set -xe && \
 ADD nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
 RUN set -xe && \
-    echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx" \
+    echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx, /usr/bin/htpasswd, /usr/bin/fail2ban-server" \
       >> /etc/sudoers
+
+ADD htpasswd /etc/nginx/.htpasswd
 
 USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
@@ -149,7 +152,12 @@ ENV MEDIAGOBLIN_ADMIN_USER admin
 ENV MEDIAGOBLIN_ADMIN_PASS admin
 ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
 
-CMD sudo nginx && \
+# HTTP Basic Auth credentials
+ENV BASIC_AUTH_USERNAME user
+ENV BASIC_AUTH_PASS letmein@
+
+CMD set -xe && \
+    sudo nginx && \
     bin/gmg dbupdate && \
     `# Ignore failure to add admin because they may already exist.` && \
     { \
