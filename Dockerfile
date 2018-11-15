@@ -104,12 +104,16 @@ RUN set -xe && \
     bin/pip install scikits.audiolab && \
     bin/easy_install flup==1.0.3.dev-20110405 && \
     ln --symbolic "$MEDIAGOBLIN_HOME_DIR" user_dev && \
+    git clone https://github.com/ayleph/mediagoblin-basicsearch.git && \
+    cp --recursive mediagoblin-basicsearch/basicsearch mediagoblin/plugins/ && \
+    rm -rf mediagoblin-basicsearch && \
     cp --archive --verbose mediagoblin.ini mediagoblin_local.ini && \
     cp --archive --verbose paste.ini paste_local.ini && \
     sed \
       --in-place \
       "s@.*sql_engine = .*@sql_engine = sqlite:///${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db@" \
       mediagoblin_local.ini && \
+    echo '[[mediagoblin.plugins.basicsearch]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
     echo '[[[skip_transcode]]]' >> mediagoblin_local.ini && \
     echo 'mime_types = video/webm, video/ogg, video/mp4, audio/ogg, application/ogg, application/x-annodex' >> mediagoblin_local.ini && \
