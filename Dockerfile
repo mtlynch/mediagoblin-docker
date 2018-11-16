@@ -18,6 +18,10 @@
 
 FROM debian:jessie
 
+# Set locale.
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
 RUN apt-get update
 RUN apt-get install -y \
       automake \
@@ -32,6 +36,7 @@ RUN apt-get install -y \
       libasound2-dev \
       libgstreamer-plugins-base1.0-dev \
       libsndfile1-dev \
+      mercurial \
       nginx \
       nodejs-legacy \
       npm \
@@ -46,7 +51,32 @@ RUN apt-get install -y \
       python-numpy \
       python-scipy \
       python-virtualenv \
+      rsync \
       sudo
+
+ARG GCSFUSE_REPO="gcsfuse-jessie"
+ARG GCS_MOUNT_ROOT="/mnt/gcsfuse"
+RUN apt-get install --yes --no-install-recommends \
+    ca-certificates \
+    curl && \
+    echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" \
+      | tee /etc/apt/sources.list.d/gcsfuse.list && \
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+      | apt-key add -
+RUN apt-get update
+RUN apt-get install --yes gcsfuse && \
+    echo 'user_allow_other' > /etc/fuse.conf
+
+# Install entr.
+ARG ENTR_ROOT="/var/lib/entr"
+ARG ENTR_VERSION="4.1"
+RUN set -xe && \
+    mkdir --parents "$ENTR_ROOT" && \
+    cd "$ENTR_ROOT" && \
+    hg clone https://bitbucket.org/eradman/entr . && \
+    hg checkout "entr-${ENTR_VERSION}" && \
+    ./configure && \
+    make install
 
 # Information for MediaGoblin system account.
 ARG MEDIAGOBLIN_USER="mediagoblin"
@@ -76,7 +106,11 @@ RUN set -xe && \
     chown \
       --no-dereference \
       --recursive \
-      "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT"
+      "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT" && \
+    mkdir --parents "$GCS_MOUNT_ROOT" && \
+    chown \
+      --no-dereference \
+      "${MEDIAGOBLIN_USER}:www-data" "$GCS_MOUNT_ROOT"
 
 ADD nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
@@ -87,6 +121,7 @@ RUN set -xe && \
 USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
 
+ENV MEDIAGOBLIN_DB_PATH "${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db"
 RUN set -xe && \
     git clone https://github.com/mtlynch/mediagoblin.git . && \
     git checkout docker-friendly && \
@@ -102,7 +137,7 @@ RUN set -xe && \
     cp --archive --verbose paste.ini paste_local.ini && \
     sed \
       --in-place \
-      "s@.*sql_engine = .*@sql_engine = sqlite:///${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db@" \
+      "s@.*sql_engine = .*@sql_engine = sqlite:///${MEDIAGOBLIN_DB_PATH}@" \
       mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
@@ -116,7 +151,8 @@ RUN set -xe && \
 USER root
 RUN apt-get remove --yes \
     automake \
-    git-core && \
+    git-core \
+    mercurial && \
     rm -rf /var/lib/apt/lists/* && \
     rm -Rf /usr/share/doc && \
     rm -Rf /usr/share/man && \
@@ -131,20 +167,19 @@ EXPOSE 80
 ENV MEDIGOBLIN_USER "$MEDIAGOBLIN_USER"
 ENV MEDIAGOBLIN_HOME_DIR "$MEDIAGOBLIN_HOME_DIR"
 ENV NGINX_GROUP "$NGINX_GROUP"
+ENV GCS_MOUNT_ROOT "$GCS_MOUNT_ROOT"
+
+ENV GCS_BUCKET "REPLACE-WITH-YOUR-GCS-BUCKET-NAME"
+
+ENV MEDIAGOBLIN_MEDIA_DIR "${MEDIAGOBLIN_HOME_DIR}/media"
+ENV MEDIAGOBLIN_PUBLIC_DIR "${MEDIAGOBLIN_MEDIA_DIR}/public"
+ENV GCS_PUBLIC_DIR "${GCS_MOUNT_ROOT}/media/public"
+ENV GCS_DB_PATH "${GCS_MOUNT_ROOT}/mediagoblin.db"
 
 # Admin user in the MediaGoblin app.
 ENV MEDIAGOBLIN_ADMIN_USER admin
 ENV MEDIAGOBLIN_ADMIN_PASS admin
 ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
 
-CMD sudo nginx && \
-    bin/gmg dbupdate && \
-    bin/gmg adduser \
-      --username "$MEDIAGOBLIN_ADMIN_USER" \
-      --password "$MEDIAGOBLIN_ADMIN_PASS" \
-      --email "$MEDIAGOBLIN_ADMIN_EMAIL" && \
-    bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER" && \
-    ./lazyserver.sh \
-      --server-name=fcgi \
-      fcgi_host=127.0.0.1 \
-      fcgi_port=26543
+ADD entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
