@@ -82,8 +82,12 @@ RUN set -xe && \
       --recursive \
       "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT"
 
+# Configure nginx.
+ARG HTTP_AUTH_USER='user'
+ARG HTTP_AUTH_PASS='pass'
 ADD nginx.conf /etc/nginx/sites-enabled/nginx.conf
-RUN rm /etc/nginx/sites-enabled/default
+RUN rm /etc/nginx/sites-enabled/default && \
+    python -c "import crypt; print '$HTTP_AUTH_USER:%s' % crypt.crypt('$HTTP_AUTH_PASS', '\$6\$saltysalt348982553')" >> /etc/nginx/.htpasswd
 RUN set -xe && \
     echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx" \
       >> /etc/sudoers
