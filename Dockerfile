@@ -41,7 +41,6 @@ RUN apt-get install --yes \
       libasound2-dev \
       libgstreamer-plugins-base1.0-dev \
       libsndfile1-dev \
-      mercurial \
       nginx \
       poppler-utils \
       python \
@@ -58,30 +57,6 @@ RUN apt-get install --yes \
       sudo && \
     curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
     apt-get install --yes nodejs
-
-ARG GCSFUSE_REPO="gcsfuse-jessie"
-ARG GCS_MOUNT_ROOT="/mnt/gcsfuse"
-RUN apt-get install --yes --no-install-recommends \
-    ca-certificates \
-    curl && \
-    echo "deb http://packages.cloud.google.com/apt $GCSFUSE_REPO main" \
-      | tee /etc/apt/sources.list.d/gcsfuse.list && \
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-      | apt-key add -
-RUN apt-get update
-RUN apt-get install --yes gcsfuse && \
-    echo 'user_allow_other' > /etc/fuse.conf
-
-# Install entr.
-ARG ENTR_ROOT="/var/lib/entr"
-ARG ENTR_VERSION="4.1"
-RUN set -xe && \
-    mkdir --parents "$ENTR_ROOT" && \
-    cd "$ENTR_ROOT" && \
-    hg clone https://bitbucket.org/eradman/entr . && \
-    hg checkout "entr-${ENTR_VERSION}" && \
-    ./configure && \
-    make install
 
 # Information for MediaGoblin system account.
 ARG MEDIAGOBLIN_USER="mediagoblin"
@@ -112,22 +87,14 @@ RUN set -xe && \
     chown \
       --no-dereference \
       --recursive \
-      "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT" && \
-    mkdir --parents "$GCS_MOUNT_ROOT" && \
-    chown \
-      --no-dereference \
-      "${MEDIAGOBLIN_USER}:www-data" "$GCS_MOUNT_ROOT"
+      "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT"
 
 # Configure nginx.
-ARG HTTP_AUTH_USER='user'
-ARG HTTP_AUTH_PASS='pass'
-ARG GCS_BUCKET="REPLACE-WITH-YOUR-GCS-BUCKET-NAME"
 ADD nginx.conf.tmpl /tmp/nginx.conf.tmpl
 RUN set -xe && \
-    envsubst '${DOMAIN},${APP_ROOT},${GCS_BUCKET}' < /tmp/nginx.conf.tmpl \
+    envsubst '${DOMAIN},${APP_ROOT}' < /tmp/nginx.conf.tmpl \
       > /etc/nginx/sites-enabled/nginx.conf && \
     rm /etc/nginx/sites-enabled/default && \
-    python -c "import crypt; print '$HTTP_AUTH_USER:%s' % crypt.crypt('$HTTP_AUTH_PASS', '\$6\$saltysalt348982553')" >> /etc/nginx/.htpasswd && \
     echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx" \
       >> /etc/sudoers
 
@@ -188,15 +155,10 @@ EXPOSE 80
 
 # Copy build args to environment variables so that they're accessible in CMD.
 ENV NGINX_GROUP "$NGINX_GROUP"
-ENV GCS_MOUNT_ROOT "$GCS_MOUNT_ROOT"
 ENV MEDIAGOBLIN_DB_PATH "$MEDIAGOBLIN_DB_PATH"
-
-ENV GCS_BUCKET "$GCS_BUCKET"
 
 ENV MEDIAGOBLIN_MEDIA_DIR "${MEDIAGOBLIN_HOME_DIR}/media"
 ENV MEDIAGOBLIN_PUBLIC_DIR "${MEDIAGOBLIN_MEDIA_DIR}/public"
-ENV GCS_PUBLIC_DIR "${GCS_MOUNT_ROOT}/media/public"
-ENV GCS_DB_PATH "${GCS_MOUNT_ROOT}/mediagoblin.db"
 
 # Admin user in the MediaGoblin app.
 ENV MEDIAGOBLIN_ADMIN_USER admin
