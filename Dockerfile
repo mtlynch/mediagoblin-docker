@@ -16,15 +16,16 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-FROM debian:jessie
+FROM debian:stretch
 
 # Set locale.
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
 RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get install --yes \
       automake \
+      curl \
       gir1.2-gst-plugins-base-1.0 \
       gir1.2-gstreamer-1.0 \
       git-core \
@@ -37,8 +38,6 @@ RUN apt-get install -y \
       libgstreamer-plugins-base1.0-dev \
       libsndfile1-dev \
       nginx \
-      nodejs-legacy \
-      npm \
       poppler-utils \
       python \
       python3-gi \
@@ -50,7 +49,9 @@ RUN apt-get install -y \
       python-numpy \
       python-scipy \
       python-virtualenv \
-      sudo
+      sudo && \
+    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+    apt-get install --yes nodejs
 
 # Information for MediaGoblin system account.
 ARG MEDIAGOBLIN_USER="mediagoblin"
