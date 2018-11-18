@@ -57,7 +57,8 @@ ARG MEDIAGOBLIN_USER="mediagoblin"
 ARG MEDIAGOBLIN_GROUP="mediagoblin"
 ARG NGINX_GROUP="www-data"
 
-ARG APP_ROOT="/srv/mediagoblin.example.org/mediagoblin"
+ARG DOMAIN="mediagoblin.example.org"
+ARG APP_ROOT="/srv/${DOMAIN}/mediagoblin"
 ARG LOG_ROOT="/var/log/mediagoblin"
 ARG MEDIAGOBLIN_HOME_DIR="/var/lib/mediagoblin"
 
@@ -82,9 +83,11 @@ RUN set -xe && \
       --recursive \
       "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT"
 
-ADD nginx.conf /etc/nginx/sites-enabled/nginx.conf
-RUN rm /etc/nginx/sites-enabled/default
+ADD nginx.conf.tmpl /tmp/nginx.conf.tmpl
 RUN set -xe && \
+    envsubst '${DOMAIN},${APP_ROOT}' < /tmp/nginx.conf.tmpl \
+      > /etc/nginx/sites-enabled/nginx.conf && \
+    rm /etc/nginx/sites-enabled/default && \
     echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx" \
       >> /etc/sudoers
 

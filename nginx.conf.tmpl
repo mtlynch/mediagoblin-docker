@@ -26,28 +26,28 @@ server {
  # interprets as an HTML file, etc.)
  add_header X-Content-Type-Options nosniff;
 
- server_name mediagoblin.example.org www.mediagoblin.example.org;
- access_log /var/log/nginx/mediagoblin.example.access.log;
- error_log /var/log/nginx/mediagoblin.example.error.log;
+ server_name $DOMAIN www.${DOMAIN};
+ access_log /var/log/nginx/${DOMAIN}.access.log;
+ error_log /var/log/nginx/${DOMAIN}.error.log;
 
  # MediaGoblin's stock static files: CSS, JS, etc.
  location /mgoblin_static/ {
-    alias /srv/mediagoblin.example.org/mediagoblin/mediagoblin/static/;
+    alias ${APP_ROOT}/mediagoblin/static/;
  }
 
  # Instance specific media:
  location /mgoblin_media/ {
-    alias /srv/mediagoblin.example.org/mediagoblin/user_dev/media/public/;
+    alias ${APP_ROOT}/user_dev/media/public/;
  }
 
  # Theme static files (usually symlinked in)
  location /theme_static/ {
-    alias /srv/mediagoblin.example.org/mediagoblin/user_dev/theme_static/;
+    alias ${APP_ROOT}/user_dev/theme_static/;
  }
 
  # Plugin static files (usually symlinked in)
  location /plugin_static/ {
-    alias /srv/mediagoblin.example.org/mediagoblin/user_dev/plugin_static/;
+    alias ${APP_ROOT}/user_dev/plugin_static/;
  }
 
  # Mounting MediaGoblin itself via FastCGI.
