@@ -118,11 +118,16 @@ RUN set -xe && \
       --no-dereference \
       "${MEDIAGOBLIN_USER}:www-data" "$GCS_MOUNT_ROOT"
 
+# Configure nginx.
+ARG HTTP_AUTH_USER='user'
+ARG HTTP_AUTH_PASS='pass'
+ARG GCS_BUCKET="REPLACE-WITH-YOUR-GCS-BUCKET-NAME"
 ADD nginx.conf.tmpl /tmp/nginx.conf.tmpl
 RUN set -xe && \
-    envsubst '${DOMAIN},${APP_ROOT}' < /tmp/nginx.conf.tmpl \
+    envsubst '${DOMAIN},${APP_ROOT},${GCS_BUCKET}' < /tmp/nginx.conf.tmpl \
       > /etc/nginx/sites-enabled/nginx.conf && \
     rm /etc/nginx/sites-enabled/default && \
+    python -c "import crypt; print '$HTTP_AUTH_USER:%s' % crypt.crypt('$HTTP_AUTH_PASS', '\$6\$saltysalt348982553')" >> /etc/nginx/.htpasswd && \
     echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx" \
       >> /etc/sudoers
 
@@ -131,7 +136,7 @@ WORKDIR "$APP_ROOT"
 
 ARG MEDIAGOBLIN_DB_PATH="${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db"
 ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
-ARG MEDIAGOBLIN_BRANCH="docker-friendly"
+ARG MEDIAGOBLIN_BRANCH="mtlynch-custom"
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
     git checkout "$MEDIAGOBLIN_BRANCH" && \
@@ -143,15 +148,23 @@ RUN set -xe && \
     bin/pip install scikits.audiolab && \
     bin/easy_install flup==1.0.3.dev-20110405 && \
     ln --symbolic "$MEDIAGOBLIN_HOME_DIR" user_dev && \
+    git clone https://github.com/ayleph/mediagoblin-basicsearch.git && \
+    cp --recursive mediagoblin-basicsearch/basicsearch mediagoblin/plugins/ && \
+    rm -rf mediagoblin-basicsearch && \
     cp --archive --verbose mediagoblin.ini mediagoblin_local.ini && \
     cp --archive --verbose paste.ini paste_local.ini && \
     sed \
       --in-place \
       "s@.*sql_engine = .*@sql_engine = sqlite:///${MEDIAGOBLIN_DB_PATH}@" \
       mediagoblin_local.ini && \
+    echo '[[mediagoblin.plugins.basicsearch]]' >> mediagoblin_local.ini && \
     echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
-    echo '[[mediagoblin.media_types.audio]]' >> mediagoblin_local.ini && \
-    echo '[[mediagoblin.media_types.pdf]]' >> mediagoblin_local.ini && \
+    echo '[[[skip_transcode]]]' >> mediagoblin_local.ini && \
+    echo 'mime_types = video/webm, video/ogg, video/mp4, audio/ogg, application/ogg, application/x-annodex' >> mediagoblin_local.ini && \
+    echo 'container_formats = Matroska, Ogg, ISO MP4/M4A' >> mediagoblin_local.ini && \
+    echo 'video_codecs = d, VP8 video, VP9 video, Theora, H.264, H.264 / AVC, MPEG-4 video' >> mediagoblin_local.ini && \
+    echo 'audio_codecs = Opus, Vorbis, MPEG-4 AAC, MPEG-4 AAC audio' >> mediagoblin_local.ini && \
+    echo 'dimensions_match = false' >> mediagoblin_local.ini && \
     chgrp \
       --no-dereference \
       --recursive \
@@ -176,8 +189,9 @@ EXPOSE 80
 # Copy build args to environment variables so that they're accessible in CMD.
 ENV NGINX_GROUP "$NGINX_GROUP"
 ENV GCS_MOUNT_ROOT "$GCS_MOUNT_ROOT"
+ENV MEDIAGOBLIN_DB_PATH "$MEDIAGOBLIN_DB_PATH"
 
-ENV GCS_BUCKET "REPLACE-WITH-YOUR-GCS-BUCKET-NAME"
+ENV GCS_BUCKET "$GCS_BUCKET"
 
 ENV MEDIAGOBLIN_MEDIA_DIR "${MEDIAGOBLIN_HOME_DIR}/media"
 ENV MEDIAGOBLIN_PUBLIC_DIR "${MEDIAGOBLIN_MEDIA_DIR}/public"

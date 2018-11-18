@@ -8,6 +8,7 @@ sudo nginx
 gcsfuse \
   -o nonempty \
   -o allow_other \
+  --implicit-dirs \
   "$GCS_BUCKET" "$GCS_MOUNT_ROOT"
 
 # Link MediaGoblin's media serving folder to GCS.
