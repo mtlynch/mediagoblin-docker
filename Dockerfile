@@ -104,6 +104,8 @@ WORKDIR "$APP_ROOT"
 ARG MEDIAGOBLIN_DB_PATH="${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db"
 ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
 ARG MEDIAGOBLIN_BRANCH="mtlynch-custom"
+ARG HTML_TITLE="GNU MediaGoblin"
+
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
     git checkout "$MEDIAGOBLIN_BRANCH" && \
@@ -118,20 +120,17 @@ RUN set -xe && \
     git clone https://github.com/ayleph/mediagoblin-basicsearch.git && \
     cp --recursive mediagoblin-basicsearch/basicsearch mediagoblin/plugins/ && \
     rm -rf mediagoblin-basicsearch && \
-    cp --archive --verbose mediagoblin.ini mediagoblin_local.ini && \
-    cp --archive --verbose paste.ini paste_local.ini && \
+    cp --archive --verbose paste.ini paste_local.ini
+ADD mediagoblin_local.ini mediagoblin_local.ini
+RUN set -xe && \
     sed \
       --in-place \
       "s@.*sql_engine = .*@sql_engine = sqlite:///${MEDIAGOBLIN_DB_PATH}@" \
       mediagoblin_local.ini && \
-    echo '[[mediagoblin.plugins.basicsearch]]' >> mediagoblin_local.ini && \
-    echo '[[mediagoblin.media_types.video]]' >> mediagoblin_local.ini && \
-    echo '[[[skip_transcode]]]' >> mediagoblin_local.ini && \
-    echo 'mime_types = video/webm, video/ogg, video/mp4, audio/ogg, application/ogg, application/x-annodex' >> mediagoblin_local.ini && \
-    echo 'container_formats = Matroska, Ogg, ISO MP4/M4A' >> mediagoblin_local.ini && \
-    echo 'video_codecs = d, VP8 video, VP9 video, Theora, H.264, H.264 / AVC, MPEG-4 video' >> mediagoblin_local.ini && \
-    echo 'audio_codecs = Opus, Vorbis, MPEG-4 AAC, MPEG-4 AAC audio' >> mediagoblin_local.ini && \
-    echo 'dimensions_match = false' >> mediagoblin_local.ini && \
+    sed \
+      --in-place \
+      "s@.*html_title = .*@html_title = ${HTML_TITLE}@" \
+      mediagoblin_local.ini && \
     chgrp \
       --no-dereference \
       --recursive \
