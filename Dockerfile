@@ -112,7 +112,7 @@ RUN set -xe && \
       --no-dereference \
       "${MEDIAGOBLIN_USER}:www-data" "$GCS_MOUNT_ROOT"
 
-ADD nginx.conf /etc/nginx/sites-enabled/nginx.conf
+COPY nginx.conf /etc/nginx/sites-enabled/nginx.conf
 RUN rm /etc/nginx/sites-enabled/default
 RUN set -xe && \
     echo "$MEDIAGOBLIN_USER ALL=(ALL:ALL) NOPASSWD: /usr/sbin/nginx" \
@@ -181,5 +181,5 @@ ENV MEDIAGOBLIN_ADMIN_USER admin
 ENV MEDIAGOBLIN_ADMIN_PASS admin
 ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
 
-ADD entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
