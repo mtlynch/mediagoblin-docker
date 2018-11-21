@@ -84,7 +84,7 @@ RUN set -xe && \
       --recursive \
       "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT"
 
-ADD nginx.conf.tmpl /tmp/nginx.conf.tmpl
+COPY nginx.conf.tmpl /tmp/nginx.conf.tmpl
 RUN set -xe && \
     envsubst '${DOMAIN},${APP_ROOT}' < /tmp/nginx.conf.tmpl \
       > /etc/nginx/sites-enabled/nginx.conf && \
