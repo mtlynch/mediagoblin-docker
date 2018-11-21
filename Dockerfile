@@ -16,7 +16,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-FROM debian:jessie
+FROM debian:stretch
 
 # Set locale.
 ENV LANG C.UTF-8
@@ -25,6 +25,7 @@ ENV LC_ALL C.UTF-8
 RUN apt-get update
 RUN apt-get install -y \
       automake \
+      curl \
       gir1.2-gst-plugins-base-1.0 \
       gir1.2-gstreamer-1.0 \
       git-core \
@@ -38,8 +39,6 @@ RUN apt-get install -y \
       libsndfile1-dev \
       mercurial \
       nginx \
-      nodejs-legacy \
-      npm \
       poppler-utils \
       python \
       python3-gi \
@@ -52,9 +51,11 @@ RUN apt-get install -y \
       python-scipy \
       python-virtualenv \
       rsync \
-      sudo
+      sudo && \
+    curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
+    apt-get install --yes nodejs
 
-ARG GCSFUSE_REPO="gcsfuse-jessie"
+ARG GCSFUSE_REPO="gcsfuse-stretch"
 ARG GCS_MOUNT_ROOT="/mnt/gcsfuse"
 RUN apt-get install --yes --no-install-recommends \
     ca-certificates \
