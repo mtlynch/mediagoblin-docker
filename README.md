@@ -1,6 +1,6 @@
 # Dockerized http://mediagoblin.org/
 
-[![CircleCI](https://circleci.com/gh/mtlynch/mediagoblin-docker.svg?style=svg)](https://circleci.com/gh/mtlynch/mediagoblin-docker) [![Build Status](https://travis-ci.org/mtlynch/mediagoblin-docker.svg?branch=master)](https://travis-ci.org/mtlynch/mediagoblin-docker) [![Docker Pulls](https://img.shields.io/docker/pulls/mtlynch/mediagoblin.svg?maxAge=604800)](https://hub.docker.com/r/mtlynch/mediagoblin/) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![CircleCI](https://circleci.com/gh/mtlynch/mediagoblin-docker.svg?style=svg)](https://circleci.com/gh/mtlynch/mediagoblin-docker) [![Docker Pulls](https://img.shields.io/docker/pulls/mtlynch/mediagoblin.svg?maxAge=604800)](https://hub.docker.com/r/mtlynch/mediagoblin/) [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 ## Demo MediaGoblin
 
