@@ -7,6 +7,7 @@ set -x
 
 IMAGE_NAME="mediagoblin-image"
 CONTAINER_NAME="mediagoblin-container"
+PORT=8080
 
 docker version
 
@@ -20,15 +21,16 @@ docker rm -f "$CONTAINER_NAME" &> /dev/null || true
 docker run \
   --tty \
   --detach \
-  --publish 8080:80 \
+  --publish "${PORT}:6543" \
   --name "$CONTAINER_NAME" \
   "$IMAGE_NAME"
 
 # Give the container a little time to start up.
-sleep 3
+sleep 10
 
 curl \
+  --user "user:pass" \
   --retry 15 \
   --retry-delay 2 \
   --fail \
-  "http://localhost:8080/" > /dev/null
+  "http://localhost:${PORT}/" > /dev/null
