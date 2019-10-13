@@ -1,6 +1,0 @@
----
-sudo: required
-services: docker
-script: ./build
-notifications:
-  email: false
