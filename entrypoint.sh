@@ -2,15 +2,13 @@
 
 set -xe
 
-bin/gmg dbupdate
+su "$MEDIAGOBLIN_USER" -c './init-mediagoblin.sh'
 
-# Ignore failure to add admin user because they may already exist.
-{
-  bin/gmg adduser \
-    --username "$MEDIAGOBLIN_ADMIN_USER" \
-    --password "$MEDIAGOBLIN_ADMIN_PASS" \
-    --email "$MEDIAGOBLIN_ADMIN_EMAIL" && \
-  bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER"
-} || true
+envsubst '${PORT},${DOMAIN},${APP_ROOT},${GCS_BUCKET}' \
+  < "$NGINX_CONFIG_TEMPLATE" \
+  > /etc/nginx/sites-enabled/default
 
-./lazyserver.sh --server-name=broadcast
+echo "Turning on nginx for port $PORT"
+nginx
+
+su "$MEDIAGOBLIN_USER" -c './lazyserver.sh --server-name=broadcast'

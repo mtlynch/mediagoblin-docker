@@ -71,37 +71,63 @@ RUN apt-get install --yes \
       gstreamer1.0-tools \
       python3-gi
 
+# Install nginx
+RUN apt-get install --yes nginx
+
+# Install gettext (for the envsubst command)
+RUN apt-get install --yes gettext
+
 # Information for MediaGoblin system account.
 ARG MEDIAGOBLIN_USER="mediagoblin"
 ARG MEDIAGOBLIN_GROUP="mediagoblin"
+ARG NGINX_GROUP="www-data"
 
 ARG DOMAIN="mediagoblin.example.org"
 ARG APP_ROOT="/srv/${DOMAIN}/mediagoblin"
+ARG LOG_ROOT="/var/log/mediagoblin"
 ARG MEDIAGOBLIN_HOME_DIR="/var/lib/mediagoblin"
 
 RUN set -xe && \
-    groupadd "$MEDIAGOBLIN_GROUP" && \
     useradd \
       --comment "GNU MediaGoblin system account" \
       --home-dir "$MEDIAGOBLIN_HOME_DIR" \
       --create-home \
       --system \
-      --gid "$MEDIAGOBLIN_GROUP" \
+      --gid "$NGINX_GROUP" \
       "$MEDIAGOBLIN_USER" && \
+    groupadd "$MEDIAGOBLIN_GROUP" && \
+    usermod --append --groups "$MEDIAGOBLIN_GROUP" "$MEDIAGOBLIN_USER" && \
+    mkdir --parents "$LOG_ROOT" && \
+    chown \
+      --no-dereference \
+      --recursive \
+      "${MEDIAGOBLIN_USER}:${MEDIAGOBLIN_GROUP}" "$LOG_ROOT" && \
     mkdir --parents "$APP_ROOT" && \
     chown \
       --no-dereference \
       --recursive \
-      "${MEDIAGOBLIN_USER}:${MEDIAGOBLIN_GROUP}" "$APP_ROOT"
+      "${MEDIAGOBLIN_USER}:${NGINX_GROUP}" "$APP_ROOT"
 
+# Configure nginx.
+ARG HTTP_AUTH_USER='user'
+ARG HTTP_AUTH_PASS='pass'
+ARG GCS_BUCKET="REPLACE-WITH-YOUR-GCS-BUCKET-NAME"
+
+RUN set -xe && \
+    python -c "import crypt; print '$HTTP_AUTH_USER:%s' % crypt.crypt('$HTTP_AUTH_PASS', '\$6\$saltysalt348982553')" >> /etc/nginx/.htpasswd
+
+ARG MEDIAGOBLIN_DB_URL="REPLACE-WITH-YOUR-DB-URL"
 ARG MEDIAGOBLIN_DB_PATH="${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db"
+ADD "$MEDIAGOBLIN_DB_URL" "$MEDIAGOBLIN_DB_PATH"
+RUN chown "$MEDIAGOBLIN_USER" "$MEDIAGOBLIN_DB_PATH" && \
+    chmod 400 "$MEDIAGOBLIN_DB_PATH"
 
 USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
 
-ARG MEDIAGOBLIN_REPO="https://git.savannah.gnu.org/git/mediagoblin.git"
-# Check out a known-working commit from 2019-09-20
-ARG MEDIAGOBLIN_BRANCH="e34916"
+ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
+ARG MEDIAGOBLIN_BRANCH="mtlynch-custom"
+ARG HTML_TITLE="GNU MediaGoblin"
 
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
@@ -117,18 +143,31 @@ RUN set -xe && \
     ./bin/python setup.py develop --upgrade && \
     ./bin/pip install flup==1.0.3
 
+# Install basicsearch plugin
 RUN set -xe && \
-    echo '[[mediagoblin.media_types.audio]]' >> mediagoblin.ini && \
-    echo '[[mediagoblin.media_types.video]]' >> mediagoblin.ini
+    ln --symbolic "$MEDIAGOBLIN_HOME_DIR" user_dev && \
+    git clone https://github.com/ayleph/mediagoblin-basicsearch.git && \
+    cp --recursive mediagoblin-basicsearch/basicsearch mediagoblin/plugins/ && \
+    rm -rf mediagoblin-basicsearch
 
+COPY mediagoblin.ini mediagoblin.ini
 RUN set -xe && \
+    sed \
+      --in-place \
+      "s@.*sql_engine = .*@sql_engine = sqlite:///${MEDIAGOBLIN_DB_PATH}@" \
+      mediagoblin.ini && \
+    sed \
+      --in-place \
+      "s@.*html_title = .*@html_title = ${HTML_TITLE}@" \
+      mediagoblin.ini && \
     chgrp \
       --no-dereference \
       --recursive \
-      "$MEDIAGOBLIN_GROUP" "$MEDIAGOBLIN_HOME_DIR"
+      "$NGINX_GROUP" "$MEDIAGOBLIN_HOME_DIR"
+
+USER root
 
 # Clean up.
-USER root
 RUN apt-get remove --yes \
     git-core && \
     rm -rf /var/lib/apt/lists/* && \
@@ -140,11 +179,28 @@ RUN apt-get remove --yes \
 ENV PORT 80
 EXPOSE "$PORT"
 
+# Copy build args to environment variables so that they're accessible in CMD.
+ENV DOMAIN "$DOMAIN"
+ENV APP_ROOT "$APP_ROOT"
+ENV NGINX_GROUP "$NGINX_GROUP"
+ENV MEDIAGOBLIN_USER "$MEDIAGOBLIN_USER"
+ENV MEDIAGOBLIN_DB_PATH "$MEDIAGOBLIN_DB_PATH"
+
+ENV GCS_BUCKET "$GCS_BUCKET"
+
+ENV MEDIAGOBLIN_MEDIA_DIR "${MEDIAGOBLIN_HOME_DIR}/media"
+ENV MEDIAGOBLIN_PUBLIC_DIR "${MEDIAGOBLIN_MEDIA_DIR}/public"
+
 # Admin user in the MediaGoblin app.
 ENV MEDIAGOBLIN_ADMIN_USER admin
 ENV MEDIAGOBLIN_ADMIN_PASS admin
 ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
 
-COPY entrypoint.sh /entrypoint.sh
-USER "$MEDIAGOBLIN_USER"
-CMD ["/entrypoint.sh"]
+ARG NGINX_CONFIG_TEMPLATE="/etc/nginx/conf.d/default.conf.tmpl"
+ENV NGINX_CONFIG_TEMPLATE "$NGINX_CONFIG_TEMPLATE"
+COPY default.conf.tmpl "$NGINX_CONFIG_TEMPLATE"
+COPY nginx.conf /etc/nginx/nginx.conf
+
+COPY entrypoint.sh entrypoint.sh
+COPY init-mediagoblin.sh init-mediagoblin.sh
+CMD ["./entrypoint.sh"]
