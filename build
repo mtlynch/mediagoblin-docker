@@ -8,6 +8,7 @@ set -x
 IMAGE_NAME="mediagoblin-image"
 CONTAINER_NAME="mediagoblin-container"
 PORT=8080
+NGINX_PORT=80
 
 docker version
 
@@ -21,7 +22,7 @@ docker rm -f "$CONTAINER_NAME" &> /dev/null || true
 docker run \
   --tty \
   --detach \
-  --publish "${PORT}:6543" \
+  --publish "${PORT}:${NGINX_PORT}" \
   --name "$CONTAINER_NAME" \
   "$IMAGE_NAME"
 
