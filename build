@@ -25,8 +25,8 @@ docker run \
   --name "$CONTAINER_NAME" \
   "$IMAGE_NAME"
 
-# Give the container a little time to start up.
-sleep 10
+# Wait at most 15 seconds until server is listening on a TCP port.
+timeout 15 bash -c 'until printf "" 2>>/dev/null >>/dev/tcp/$0/$1; do sleep 1; done' localhost "${PORT}"
 
 curl \
   --retry 15 \
