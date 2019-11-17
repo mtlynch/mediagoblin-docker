@@ -29,7 +29,6 @@ docker run \
 sleep 10
 
 curl \
-  --user "user:pass" \
   --retry 15 \
   --retry-delay 2 \
   --fail \
