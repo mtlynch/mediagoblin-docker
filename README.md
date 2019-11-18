@@ -7,7 +7,12 @@
 All data are lost when the container is stopped.
 
 ```bash
-docker run -p 8080:6543 mtlynch/mediagoblin
+docker run \
+  --tty \
+  --detach \
+  --publish 8080:6543 \
+  --name medaigoblin \
+  mtlynch/mediagoblin
 ```
 
 MediaGoblin will be available at http://localhost:8080
@@ -22,6 +27,8 @@ The data is preserved in /srv/mediagoblin.
 mkdir -p persist/srv/mediagoblin
 
 docker run \
+  --tty \
+  --detach \
   --publish 8080:6543 \
   --volume "${PWD}/persist/srv/mediagoblin:/var/lib/mediagoblin" \
   --name mediagoblin \
