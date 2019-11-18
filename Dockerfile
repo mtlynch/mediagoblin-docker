@@ -137,8 +137,7 @@ RUN apt-get remove --yes \
     apt-get autoremove --yes && \
     apt-get clean
 
-ENV PORT 80
-EXPOSE "$PORT"
+EXPOSE 6543
 
 # Admin user in the MediaGoblin app.
 ENV MEDIAGOBLIN_ADMIN_USER admin
