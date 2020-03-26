@@ -99,9 +99,8 @@ ARG MEDIAGOBLIN_DB_PATH="${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db"
 USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
 
-ARG MEDIAGOBLIN_REPO="https://git.savannah.gnu.org/git/mediagoblin.git"
-# Check out a known-working commit from 2019-09-20
-ARG MEDIAGOBLIN_BRANCH="e34916"
+ARG MEDIAGOBLIN_REPO="https://github.com/mtlynch/mediagoblin.git"
+ARG MEDIAGOBLIN_BRANCH="2020-03-26"
 
 RUN set -xe && \
     git clone "$MEDIAGOBLIN_REPO" . && \
