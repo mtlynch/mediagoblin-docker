@@ -22,10 +22,6 @@ FROM debian:buster-20190910
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
-# Set locale.
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-
 RUN apt-get update
 
 # Install bootstrap and configure dependencies.
