@@ -13,4 +13,4 @@ bin/gmg dbupdate
   bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER"
 } || true
 
-./lazyserver.sh --server-name=broadcast
+./lazyserver.sh --server-name=main
