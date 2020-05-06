@@ -13,4 +13,11 @@ bin/gmg dbupdate
   bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER"
 } || true
 
+# Create a default mediagoblin.ini if none has been specified.
+if [[ ! -f mediagoblin.ini ]]
+then
+  echo '[[mediagoblin.media_types.audio]]' >> mediagoblin.ini
+  echo '[[mediagoblin.media_types.video]]' >> mediagoblin.ini
+fi
+
 ./lazyserver.sh --server-name=broadcast

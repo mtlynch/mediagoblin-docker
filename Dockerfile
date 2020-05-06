@@ -113,10 +113,6 @@ RUN set -xe && \
     ./bin/pip install flup==1.0.3
 
 RUN set -xe && \
-    echo '[[mediagoblin.media_types.audio]]' >> mediagoblin.ini && \
-    echo '[[mediagoblin.media_types.video]]' >> mediagoblin.ini
-
-RUN set -xe && \
     chgrp \
       --no-dereference \
       --recursive \
