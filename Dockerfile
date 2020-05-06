@@ -105,6 +105,10 @@ RUN set -xe && \
     VIRTUALENV_FLAGS='--system-site-packages' ./configure --with-python3 && \
     make
 
+# Remove the generated mediagoblin.ini because we don't want one hardcoded in
+# the image.
+RUN rm mediagoblin.ini
+
 # Workaround for dependencies that make fails to install.
 RUN set -xe && \
     ./bin/python setup.py develop --upgrade && \

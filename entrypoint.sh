@@ -16,6 +16,7 @@ bin/gmg dbupdate
 # Create a default mediagoblin.ini if none has been specified.
 if [[ ! -f mediagoblin.ini ]]
 then
+  cp mediagoblin.example.ini mediagoblin.ini
   echo '[[mediagoblin.media_types.audio]]' >> mediagoblin.ini
   echo '[[mediagoblin.media_types.video]]' >> mediagoblin.ini
 fi
