@@ -90,8 +90,6 @@ RUN set -xe && \
       --recursive \
       "${MEDIAGOBLIN_USER}:${MEDIAGOBLIN_GROUP}" "$APP_ROOT"
 
-ARG MEDIAGOBLIN_DB_PATH="${MEDIAGOBLIN_HOME_DIR}/mediagoblin.db"
-
 USER "$MEDIAGOBLIN_USER"
 WORKDIR "$APP_ROOT"
 
