@@ -136,7 +136,11 @@ EXPOSE 6543
 ENV MEDIAGOBLIN_ADMIN_USER admin
 ENV MEDIAGOBLIN_ADMIN_PASS admin
 ENV MEDIAGOBLIN_ADMIN_EMAIL some@where.com
+ENV MEDIAGOBLIN_USER "$MEDIAGOBLIN_USER"
+ENV MEDIAGOBLIN_GROUP "$MEDIAGOBLIN_GROUP"
+ENV MEDIAGOBLIN_HOME_DIR "$MEDIAGOBLIN_HOME_DIR"
 
-COPY entrypoint.sh /entrypoint.sh
-USER "$MEDIAGOBLIN_USER"
-CMD ["/entrypoint.sh"]
+COPY entrypoint.sh entrypoint.sh
+COPY init-mediagoblin.sh init-mediagoblin.sh
+COPY user-dev-workaround.sh user-dev-workaround.sh
+CMD ["./entrypoint.sh"]
