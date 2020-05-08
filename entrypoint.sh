@@ -1,24 +1,20 @@
 #!/bin/bash
 
-set -xe
+set -uxe
 
-bin/gmg dbupdate
-
-# Ignore failure to add admin user because they may already exist.
-{
-  bin/gmg adduser \
-    --username "$MEDIAGOBLIN_ADMIN_USER" \
-    --password "$MEDIAGOBLIN_ADMIN_PASS" \
-    --email "$MEDIAGOBLIN_ADMIN_EMAIL" && \
-  bin/gmg makeadmin "$MEDIAGOBLIN_ADMIN_USER"
-} || true
-
-# Create a default mediagoblin.ini if none has been specified.
-if [[ ! -f mediagoblin.ini ]]
+# If host mounted a manually-created MediaGoblin config file, make a copy that
+# the MediaGoblin user can access it.
+if [[ -f mediagoblin_manual.ini ]]
 then
-  cp mediagoblin.example.ini mediagoblin.ini
-  echo '[[mediagoblin.media_types.audio]]' >> mediagoblin.ini
-  echo '[[mediagoblin.media_types.video]]' >> mediagoblin.ini
+  cp mediagoblin_manual.ini mediagoblin.ini
+  chown "$MEDIAGOBLIN_USER:$MEDIAGOBLIN_GROUP" mediagoblin.ini
 fi
 
-./lazyserver.sh --server-name=broadcast
+chown \
+  --no-dereference \
+  --recursive \
+  "${MEDIAGOBLIN_USER}:${MEDIAGOBLIN_GROUP}" "$MEDIAGOBLIN_HOME_DIR"
+
+su "$MEDIAGOBLIN_USER" -c './user-dev-workaround.sh'
+su "$MEDIAGOBLIN_USER" -c './init-mediagoblin.sh'
+su "$MEDIAGOBLIN_USER" -c './lazyserver.sh --server-name=broadcast'
