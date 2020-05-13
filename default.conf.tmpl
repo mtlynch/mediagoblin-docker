@@ -52,6 +52,11 @@ server {
     alias ${APP_ROOT}/user_dev/plugin_static/;
  }
 
+ # This is a view-only config, so block authentication.
+ location /auth {
+    deny all;
+ }
+
  location / {
     proxy_pass http://127.0.0.1:6543;
 
