@@ -1,8 +1,11 @@
 #!/bin/bash
 
-set -xe
+set -uxe
 
-su "$MEDIAGOBLIN_USER" -c './init-mediagoblin.sh'
+# For some reason, heroku fails when you try to run "su mediagoblin -c ..." so
+# we'll run everything as root.
+
+./init-mediagoblin.sh
 
 envsubst '${PORT},${DOMAIN},${APP_ROOT},${GCS_BUCKET}' \
   < "$NGINX_CONFIG_TEMPLATE" \
@@ -11,4 +14,4 @@ envsubst '${PORT},${DOMAIN},${APP_ROOT},${GCS_BUCKET}' \
 echo "Turning on nginx for port $PORT"
 nginx
 
-su "$MEDIAGOBLIN_USER" -c './lazyserver.sh --server-name=broadcast'
+./lazyserver.sh --server-name=broadcast
