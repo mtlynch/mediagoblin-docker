@@ -17,4 +17,4 @@ INCORRECT_SERVING_DIR="./user_dev/media/public"
 
 mkdir --parents "$CORRECT_SERVING_DIR"
 mkdir --parents $(dirname "$INCORRECT_SERVING_DIR")
-ln -s "$CORRECT_SERVING_DIR" "$INCORRECT_SERVING_DIR"
+ln -sf "$CORRECT_SERVING_DIR" "$INCORRECT_SERVING_DIR"
